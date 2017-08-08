@@ -9,7 +9,7 @@ exports.register = function(server, options, next){
 	port            :  3306,
 	user            : 'uuinfo',
 	password        : '123321',
-	database        : 'ioio_education_web',
+	database        : 'ioio_estate_choice_api',
 	charset         : 'utf8_general_ci'
 	});
 
@@ -32,7 +32,7 @@ exports.register = function(server, options, next){
 	};
 	server.expose('query', query);
 	next();
-	
+
 }
 
 exports.register.attributes = {
