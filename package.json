@@ -1,0 +1,33 @@
+{
+  "name": "ioio_crm_mp",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "eventproxy": "^0.3.4",
+    "fs-extra": "^2.1.2",
+    "good": "^7.1.0",
+    "good-console": "^6.3.1",
+    "handlebars": "^4.0.5",
+    "hapi": "^15.2.0",
+    "inert": "^4.0.2",
+    "lodash": "^4.8.2",
+    "mongoose": "^4.7.7",
+    "mysql": "^2.11.1",
+    "node-cache": "^3.2.1",
+    "request": "^2.70.0",
+    "swig": "^1.4.2",
+    "vision": "^4.1.0",
+    "xlsjs": "^0.7.6",
+    "xml2js": "^0.4.17",
+    "csv": "^1.1.1",
+    "node-xlsx": "^0.7.4"
+  },
+  "devDependencies": {
+  }
+}
