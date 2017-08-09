@@ -3,7 +3,7 @@ var EventProxy = require('eventproxy');
 
 var estate_areas = function(server) {
 	return {
-        
+		
 
 	};
 };
