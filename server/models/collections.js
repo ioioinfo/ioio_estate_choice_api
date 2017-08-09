@@ -3,10 +3,11 @@ var EventProxy = require('eventproxy');
 
 var collections = function(server) {
 	return {
-		//根据用户id查询数量
+		//根据用户id查询code
 		get_account_byUser : function(user_id,cb){
-			var query = `select count(1) num
+			var query = `select code
 			from collections where flag = 0 and user_id = ?
+			order by created_at desc limit 1
 			`;
 
 			server.plugins['mysql'].query(query,[user_id], function(err, results) {
@@ -51,7 +52,20 @@ var collections = function(server) {
 				cb(false,results);
 			});
 		},
-		
+		//删除收藏
+		delete_collection:function(id, cb){
+			var query = `update collections set flag = 1, updated_at = now()
+				where id = ? and flag =0
+				`;
+			server.plugins['mysql'].query(query, [id], function(err, results) {
+				if (err) {
+					console.log(err);
+					cb(true,results);
+					return;
+				}
+				cb(false,results);
+			});
+		},
 
 
 	};

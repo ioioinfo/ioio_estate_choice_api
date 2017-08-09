@@ -138,7 +138,7 @@ exports.register = function(server, options, next) {
                 //查询
                 server.plugins['models'].collections.get_account_byUser(user_id,function(err,rows){
                     if (!err) {
-                        var code = rows[0].num + 1;
+                        var code = rows[0].code + 1;
                         console.log("code:"+code);
                         server.plugins['models'].collections.save_collection(house_id, user_id, code,function(err,result){
                             if (result.affectedRows>0) {
@@ -212,6 +212,106 @@ exports.register = function(server, options, next) {
                 });
 
 
+
+            }
+        },
+        //删除收藏
+        {
+            method: 'POST',
+            path: '/delete_collection',
+            handler: function(request, reply){
+                var id = request.payload.id;
+                if (!id) {
+                    return reply({"success":false,"message":"id null","service_info":service_info});
+                }
+
+                server.plugins['models'].collections.delete_collection(id, function(err,result){
+                    if (result.affectedRows>0) {
+                        return reply({"success":true,"service_info":service_info});
+                    }else {
+                        return reply({"success":false,"message":result.message,"service_info":service_info});
+                    }
+                });
+            }
+        },
+        //添加订购
+        {
+            method: "POST",
+            path: '/save_purchase',
+            handler: function(request, reply) {
+                var house_id = request.payload.house_id;
+                var user_id = request.payload.user_id;
+                if (!house_id || !user_id) {
+                    return reply({"success":false,"message":"house_id or user_id null","service_info":service_info});
+                }
+
+                server.plugins['models'].purchases.save_purchase(house_id, user_id,function(err,result){
+                    if (result.affectedRows>0) {
+                        return reply({"success":true,"service_info":service_info});
+                    }else {
+                        return reply({"success":false,"message":result.message,"service_info":service_info});
+                    }
+                });
+
+
+            }
+        },
+        //获取个人收藏信息
+        {
+            method: "GET",
+            path: '/get_purchase_byUser',
+            handler: function(request, reply) {
+                var user_id = request.query.user_id;
+                if (!user_id) {
+                    return reply({"success":false,"message":"user_id null","service_info":service_info});
+                }
+                var info2 = {};
+
+                var ep =  eventproxy.create("rows", "houses", "user",
+                    function(rows, houses, user){
+                        for (var i = 0; i < rows.length; i++) {
+                            var row = rows[i];
+                            if (houses[row.house_id]) {
+                                row.hourse = houses[row.house_id];
+                            }
+                        }
+                    return reply({"success":true,"rows":rows,"user":user,"service_info":service_info});
+                });
+
+                //查询所有房子
+                server.plugins['models'].purchases.get_purchase_byUser(user_id,function(err,rows){
+                    if (!err) {
+                        ep.emit("rows", rows);
+                    }else {
+                        ep.emit("rows", []);
+                    }
+                });
+                server.plugins['models'].house_infos.get_houses(info2,function(err,rows){
+                    if (!err) {
+                        var house_map = {};
+                        for (var i = 0; i < rows.length; i++) {
+                            house_map[rows[i].id] = rows[i];
+                        }
+                        ep.emit("houses", house_map);
+                    }else {
+                        ep.emit("houses", {});
+                    }
+                });
+                server.plugins['models'].user_infos.get_users(info2,function(err,rows){
+                    if (!err) {
+                        var user_map = {};
+                        var user = {};
+                        for (var i = 0; i < rows.length; i++) {
+                            user_map[rows[i].id] = rows[i];
+                        }
+                        if (user_map[user_id]) {
+                            user = user_map[user_id];
+                        }
+                        ep.emit("user", user);
+                    }else {
+                        ep.emit("user", {});
+                    }
+                });
 
             }
         },
