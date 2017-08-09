@@ -35,7 +35,36 @@ var purchases = function(server) {
 				cb(false,results);
 			});
 		},
+		//已订购所有房源id
+		get_purchse_houses_id : function(cb){
+			var query = `select  house_id
+			from purchases where flag = 0 and state = "成功"
+			`;
 
+			server.plugins['mysql'].query(query, function(err, results) {
+				if (err) {
+					console.log(err);
+					cb(true,results);
+					return;
+				}
+				cb(false,results);
+			});
+		},
+		//房子id查user_id信息
+		get_user_id : function(house_id,cb){
+			var query = `select user_id
+			from purchases where flag = 0 and house_id = ?
+			`;
+
+			server.plugins['mysql'].query(query,[house_id], function(err, results) {
+				if (err) {
+					console.log(err);
+					cb(true,results);
+					return;
+				}
+				cb(false,results);
+			});
+		},
 
 
 

@@ -42,7 +42,20 @@ var user_infos = function(server) {
 				cb(false,results);
 			});
 		},
-
+		//查询指定用户
+		search_user_byId : function(id, cb){
+			var query = `select id, name, phone, identify, number, address, created_at, updated_at, flag
+			from user_infos where flag = 0 and id = ?
+			`;
+			server.plugins['mysql'].query(query,[id],function(err, results) {
+				if (err) {
+					console.log(err);
+					cb(true,results);
+					return;
+				}
+				cb(false,results);
+			});
+		},
 
 	};
 };
