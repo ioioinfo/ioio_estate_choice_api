@@ -5,7 +5,7 @@ var purchases = function(server) {
 	return {
 		// 保存
 		save_purchase : function(house_id, user_id, cb){
-			var query = `insert into purchases (house_id, user_id, state, created_at, updated_at, flag )
+			var query = `insert IGNORE into purchases (house_id, user_id, state, created_at, updated_at, flag )
 			values
 			(?, ?, "成功", now(), now(), 0
 			)

@@ -315,7 +315,48 @@ exports.register = function(server, options, next) {
 
             }
         },
-
+        //id查询房子
+        {
+            method: "GET",
+            path: '/search_house_byId',
+            handler: function(request, reply) {
+                var id = request.query.id;
+                if (!id) {
+                    return reply({"success":false,"message":"id null","service_info":service_info});
+                }
+                var info2 = {};
+                var ep =  eventproxy.create("rows","types",
+                    function(rows,types){
+                        for (var i = 0; i < rows.length; i++) {
+                            var row = rows[i];
+                            if (types[row.house_type_id]) {
+                                row.type_name = types[row.house_type_id].name;
+                                row.type_picture = types[row.house_type_id].picture;
+                            }
+                        }
+                    return reply({"success":true,"rows":rows,"service_info":service_info});
+                });
+                //查询
+                server.plugins['models'].house_infos.search_house_byId(id,function(err,rows){
+                    if (!err) {
+                        ep.emit("rows", rows);
+                    }else {
+                        ep.emit("rows", []);
+                    }
+                });
+                server.plugins['models'].house_types.get_types(info2,function(err,rows){
+                    if (!err) {
+                        var type_map = {};
+                        for (var i = 0; i < rows.length; i++) {
+                            type_map[rows[i].id] = rows[i];
+                        }
+                        ep.emit("types", type_map);
+                    }else {
+                        ep.emit("types", {});
+                    }
+                });
+            }
+        },
 
 
     ]);
