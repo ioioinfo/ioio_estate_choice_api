@@ -405,8 +405,16 @@ exports.register = function(server, options, next) {
                 //查询
                 server.plugins['models'].estate_areas.get_estate_by_id(id,function(err,rows){
                     if (!err) {
-
-                        return reply({"success":true,"rows":rows,"service_info":service_info});
+						var time;
+						var starting_date = rows[0].starting_date;
+					 	starting_date = new Date(starting_date);
+						var now = new Date();
+						if (now.getTime()>starting_date.getTime()) {
+							time = 0;
+						}else {
+							time = starting_date.getTime()-now.getTime();
+						}
+                        return reply({"success":true,"rows":rows,"time":time,"service_info":service_info});
                     }else {
                         return reply({"success":false,"message":rows.message,"service_info":service_info});
                     }
