@@ -65,6 +65,24 @@ var purchases = function(server) {
 				cb(false,results);
 			});
 		},
+		//所有的
+		get_purchases : function(cb){
+			var query = `select p.house_id,u.name,u.phone,u.number
+			from purchases p
+			left join user_infos u
+      		on p.user_id = u.id
+			where p.flag = 0
+			`;
+
+			server.plugins['mysql'].query(query, function(err, results) {
+				if (err) {
+					console.log(err);
+					cb(true,results);
+					return;
+				}
+				cb(false,results);
+			});
+		},
 
 
 	};

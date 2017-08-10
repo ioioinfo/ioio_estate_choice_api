@@ -40,6 +40,22 @@ var do_result = function(err,result,cb){
 exports.register = function(server, options, next) {
 
     server.route([
+		//所有订购
+        {
+            method: "GET",
+            path: '/get_purchases',
+            handler: function(request, reply) {
+                //查询
+                server.plugins['models'].purchases.get_purchases(function(err,rows){
+                    if (!err) {
+						return reply({"success":true,"rows":rows,"service_info":service_info});
+					}else {
+	                    return reply({"success":false,"message":rows.message,"service_info":service_info});
+					}
+				});
+
+            }
+        },
 		//存login_info
 		{
 			method: "POST",
@@ -333,7 +349,7 @@ exports.register = function(server, options, next) {
                         for (var i = 0; i < rows.length; i++) {
                             var row = rows[i];
                             if (houses[row.house_id]) {
-                                row.hourse = houses[row.house_id];
+                                row.house = houses[row.house_id];
                             }
                         }
                     return reply({"success":true,"rows":rows,"user":user,"service_info":service_info});
