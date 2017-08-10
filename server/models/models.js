@@ -8,6 +8,7 @@ exports.register = function(server, options, next){
     server.expose('house_infos', require('./house_infos.js')(server));
     server.expose('collections', require('./collections.js')(server));
     server.expose('purchases', require('./purchases.js')(server));
+    server.expose('login_infos', require('./login_infos.js')(server));
 
   next();
 }

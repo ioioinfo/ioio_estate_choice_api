@@ -30,7 +30,7 @@ var user_infos = function(server) {
 
 		//查询指定用户
 		search_user_byNum : function(number, cb){
-			var query = `select id, name, phone, identify, number, address, created_at, updated_at, flag
+			var query = `select id, name, phone
 			from user_infos where flag = 0 and number = ?
 			`;
 			server.plugins['mysql'].query(query,[number],function(err, results) {

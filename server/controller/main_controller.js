@@ -40,6 +40,26 @@ var do_result = function(err,result,cb){
 exports.register = function(server, options, next) {
 
     server.route([
+		//token_id查询user_id
+        {
+            method: "GET",
+            path: '/get_user_id',
+            handler: function(request, reply) {
+                var token_id = request.query.token_id;
+                if (!token_id) {
+                    return reply({"success":false,"message":"token_id null","service_info":service_info});
+                }
+                //查询
+                server.plugins['models'].login_infos.get_user_id(token_id,function(err,rows){
+                    if (!err) {
+						return reply({"success":true,"rows":rows,"service_info":service_info});
+					}else {
+	                    return reply({"success":false,"message":rows.message,"service_info":service_info});
+					}
+				});
+
+            }
+        },
         //筹号获取用户信息
         {
             method: "GET",
@@ -52,8 +72,15 @@ exports.register = function(server, options, next) {
                 //查询
                 server.plugins['models'].user_infos.search_user_byNum(number,function(err,rows){
                     if (!err) {
-
-						return reply({"success":true,"rows":rows,"service_info":service_info});
+						if (rows.length==0) {
+							 return reply({"success":false,"message":"没有这个筹号","service_info":service_info});
+						}else {
+							var phone = [];
+							for (var i = 0; i < rows.length; i++) {
+								phone.push(rows[i].phone);
+							}
+							return reply({"success":true,"rows":phone,"service_info":service_info});
+						}
 					}else {
 	                    return reply({"success":false,"message":rows.message,"service_info":service_info});
 					}
