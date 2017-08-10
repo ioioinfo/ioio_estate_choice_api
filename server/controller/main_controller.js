@@ -321,9 +321,8 @@ exports.register = function(server, options, next) {
             path: '/search_house_byId',
             handler: function(request, reply) {
                 var id = request.query.id;
-                var state = request.query.state;
-                if (!id||!state) {
-                    return reply({"success":false,"message":"id or state null","service_info":service_info});
+                if (!id) {
+                    return reply({"success":false,"message":"id  null","service_info":service_info});
                 }
                 var info2 = {};
                 var ep =  eventproxy.create("rows","types","user_id",
@@ -338,7 +337,6 @@ exports.register = function(server, options, next) {
                         if (user_id && user_id !="") {
                             server.plugins['models'].user_infos.search_user_byId(user_id,function(err,results){
                                 if (!err) {
-                                    rows[0].state = "已售";
                                     return reply({"success":true,"rows":rows,"user":results[0],"service_info":service_info});
                                 }else {
                                     return reply({"success":false,"message":results.message,"service_info":service_info});
@@ -368,18 +366,18 @@ exports.register = function(server, options, next) {
                         ep.emit("types", {});
                     }
                 });
-                if (state == 1) {
-                    server.plugins['models'].purchases.get_user_id(id,function(err,rows){
-                        if (!err) {
-                            var user_id = rows[0].user_id;
-                            ep.emit("user_id", user_id);
-                        }else {
-                            ep.emit("user_id", "");
-                        }
-                    });
-                }else {
-                    ep.emit("user_id", "");
-                }
+				server.plugins['models'].purchases.get_user_id(id,function(err,rows){
+					if (!err) {
+						if (rows.length ==0) {
+							ep.emit("user_id", "");
+						}else {
+							var user_id = rows[0].user_id;
+							ep.emit("user_id", user_id);
+						}
+					}else {
+						ep.emit("user_id", "");
+					}
+				});
             }
         },
         //已订购所有房源id
