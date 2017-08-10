@@ -256,7 +256,7 @@ exports.register = function(server, options, next) {
 
             }
         },
-        //获取个人收藏信息
+        //获取个人订购信息
         {
             method: "GET",
             path: '/get_purchase_byUser',
