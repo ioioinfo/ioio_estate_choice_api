@@ -66,6 +66,35 @@ var collections = function(server) {
 				cb(false,results);
 			});
 		},
+		//查询是否存在
+		search_collection : function(user_id, house_id, cb){
+			var query = `select count(1) num
+			from collections where flag = 0 and user_id = ? and house_id = ?
+			`;
+
+			server.plugins['mysql'].query(query,[user_id,house_id], function(err, results) {
+				if (err) {
+					console.log(err);
+					cb(true,results);
+					return;
+				}
+				cb(false,results);
+			});
+		},
+		//取消收藏
+		cancel_collection : function(user_id, house_id, cb){
+			var query = `update collections set flag = 1, updated_at = now() where flag =0 and  user_id = ? and house_id = ?
+			`;
+
+			server.plugins['mysql'].query(query,[user_id,house_id], function(err, results) {
+				if (err) {
+					console.log(err);
+					cb(true,results);
+					return;
+				}
+				cb(false,results);
+			});
+		},
 
 
 	};

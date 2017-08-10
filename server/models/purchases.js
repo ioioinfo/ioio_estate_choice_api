@@ -67,7 +67,6 @@ var purchases = function(server) {
 		},
 
 
-
 	};
 };
 

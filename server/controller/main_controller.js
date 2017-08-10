@@ -93,15 +93,7 @@ exports.register = function(server, options, next) {
                 var info2 = {};
                 var ep =  eventproxy.create("rows", "types",
 					function(rows, types){
-                        console.log("types:"+JSON.stringify(types));
-                        for (var i = 0; i < rows.length; i++) {
-                            var row = rows[i];
-                            if (types[row.house_type_id]) {
-                                row.type_name = types[row.house_type_id].name;
-                                row.type_picture = types[row.house_type_id].picture;
-                            }
-                        }
-					return reply({"success":true,"rows":rows,"service_info":service_info});
+					return reply({"success":true,"rows":rows,"types":types,"service_info":service_info});
 				});
                 //查询所有房子
                 server.plugins['models'].house_infos.get_houses_byBuilding(building_id,function(err,rows){
@@ -138,8 +130,12 @@ exports.register = function(server, options, next) {
                 //查询
                 server.plugins['models'].collections.get_account_byUser(user_id,function(err,rows){
                     if (!err) {
-                        var code = rows[0].code + 1;
-                        console.log("code:"+code);
+						var code = 0;
+						if (rows.length == 0) {
+							code = 1;
+						}else {
+							var code = rows[0].code + 1;
+						}
                         server.plugins['models'].collections.save_collection(house_id, user_id, code,function(err,result){
                             if (result.affectedRows>0) {
         						return reply({"success":true,"service_info":service_info});
@@ -395,6 +391,67 @@ exports.register = function(server, options, next) {
                     }
                 });
 
+            }
+        },
+		//找房产项目信息
+        {
+            method: "GET",
+            path: '/get_estate_by_id',
+            handler: function(request, reply) {
+				var id = request.query.id;
+                if (!id) {
+                    return reply({"success":false,"message":"id  null","service_info":service_info});
+                }
+                //查询
+                server.plugins['models'].estate_areas.get_estate_by_id(id,function(err,rows){
+                    if (!err) {
+
+                        return reply({"success":true,"rows":rows,"service_info":service_info});
+                    }else {
+                        return reply({"success":false,"message":rows.message,"service_info":service_info});
+                    }
+                });
+
+            }
+        },
+		//查询收藏
+		{
+			method: "GET",
+			path: '/search_collection',
+			handler: function(request, reply) {
+				var house_id = request.query.house_id;
+				var user_id = request.query.user_id;
+				if (!house_id || !user_id) {
+					return reply({"success":false,"message":"house_id or user_id null","service_info":service_info});
+				}
+
+				server.plugins['models'].collections.search_collection(user_id, house_id,function(err,rows){
+					if (!err) {
+						return reply({"success":true,"num":rows[0].num,"service_info":service_info});
+					}else {
+						return reply({"success":false,"message":result.message,"service_info":service_info});
+					}
+				});
+			}
+		},
+		//取消收藏
+		{
+            method: "POST",
+            path: '/cancel_collection',
+            handler: function(request, reply) {
+                var house_id = request.payload.house_id;
+                var user_id = request.payload.user_id;
+                if (!house_id || !user_id) {
+                    return reply({"success":false,"message":"house_id or user_id null","service_info":service_info});
+                }
+
+                server.plugins['models'].collections.cancel_collection(user_id, house_id, function(err,result){
+                    if (result.affectedRows>0) {
+                        return reply({"success":true,"service_info":service_info});
+                    }else {
+                        return reply({"success":false,"message":result.message,"service_info":service_info});
+                    }
+                });
             }
         },
 
