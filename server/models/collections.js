@@ -19,7 +19,20 @@ var collections = function(server) {
 				cb(false,results);
 			});
 		},
+		get_num_byUser : function(user_id,cb){
+			var query = `select count(1)num
+			from collections where flag = 0 and user_id = ?
+			`;
 
+			server.plugins['mysql'].query(query,[user_id], function(err, results) {
+				if (err) {
+					console.log(err);
+					cb(true,results);
+					return;
+				}
+				cb(false,results);
+			});
+		},
 		// 保存
 		save_collection : function(house_id, user_id, code, cb){
 			var query = `insert into collections (house_id, user_id, code, created_at, updated_at, flag )

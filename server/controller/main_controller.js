@@ -127,27 +127,37 @@ exports.register = function(server, options, next) {
                 if (!house_id || !user_id) {
                     return reply({"success":false,"message":"house_id or user_id null","service_info":service_info});
                 }
-                //查询
-                server.plugins['models'].collections.get_account_byUser(user_id,function(err,rows){
-                    if (!err) {
-						var code = 0;
-						if (rows.length == 0) {
-							code = 1;
+			    server.plugins['models'].collections.get_num_byUser(user_id,function(err,rows){
+					if (!err) {
+						var num = rows[0].num;
+						if (num>=5) {
+							return reply({"success":false,"message":"最多收藏5个房源","service_info":service_info});
 						}else {
-							var code = rows[0].code + 1;
+							//查询
+			                server.plugins['models'].collections.get_account_byUser(user_id,function(err,rows){
+			                    if (!err) {
+									var code = 0;
+									if (rows.length == 0) {
+										code = 1;
+									}else {
+										var code = rows[0].code + 1;
+									}
+			                        server.plugins['models'].collections.save_collection(house_id, user_id, code,function(err,result){
+			                            if (result.affectedRows>0) {
+			        						return reply({"success":true,"service_info":service_info});
+			        					}else {
+			        						return reply({"success":false,"message":result.message,"service_info":service_info});
+			        					}
+			                        });
+			                    }else {
+			                        return reply({"success":false,"message":rows.message,"service_info":service_info});
+			                    }
+			                });
 						}
-                        server.plugins['models'].collections.save_collection(house_id, user_id, code,function(err,result){
-                            if (result.affectedRows>0) {
-        						return reply({"success":true,"service_info":service_info});
-        					}else {
-        						return reply({"success":false,"message":result.message,"service_info":service_info});
-        					}
-                        });
-
-                    }else {
-                        return reply({"success":false,"message":rows.message,"service_info":service_info});
-                    }
-                });
+					}else {
+						return reply({"success":false,"message":rows.message,"service_info":service_info});
+					}
+				});
             }
         },
         //获取个人收藏信息
@@ -161,13 +171,17 @@ exports.register = function(server, options, next) {
                 }
                 var info2 = {};
 
-                var ep =  eventproxy.create("rows", "houses", "user",
-                    function(rows, houses, user){
+                var ep =  eventproxy.create("rows", "houses", "user","types",
+                    function(rows, houses, user,types){
                         for (var i = 0; i < rows.length; i++) {
                             var row = rows[i];
                             if (houses[row.house_id]) {
-                                row.hourse = houses[row.house_id];
+                                row.house = houses[row.house_id];
                             }
+							if (types[row.house.house_type_id]) {
+								row.house.type_name = types[row.house.house_type_id].name;
+                                row.house.type_picture = types[row.house.house_type_id].picture;
+							}
                         }
                     return reply({"success":true,"rows":rows,"user":user,"service_info":service_info});
                 });
@@ -206,7 +220,17 @@ exports.register = function(server, options, next) {
                         ep.emit("user", {});
                     }
                 });
-
+				server.plugins['models'].house_types.get_types(info2,function(err,rows){
+                    if (!err) {
+                        var type_map = {};
+                        for (var i = 0; i < rows.length; i++) {
+                            type_map[rows[i].id] = rows[i];
+                        }
+                        ep.emit("types", type_map);
+                    }else {
+                        ep.emit("types", {});
+                    }
+                });
 
 
             }
@@ -462,6 +486,49 @@ exports.register = function(server, options, next) {
                 });
             }
         },
+		//获取所有信息
+		{
+			method: "GET",
+			path: '/get_all_infos',
+			handler: function(request, reply) {
+				var area_id = request.query.area_id;
+                if (!area_id) {
+                    return reply({"success":false,"message":"area_id null","service_info":service_info});
+                }
+				var info2 = {};
+
+				var ep =  eventproxy.create("rows", "buildings", "types",
+					function(rows, buildings, types){
+					return reply({"success":true,"rows":rows,"buildings":buildings,"types":types,"service_info":service_info});
+				});
+
+				server.plugins['models'].house_infos.get_houses(info2,function(err,rows){
+					if (!err) {
+						ep.emit("rows", rows);
+					}else {
+						ep.emit("rows", []);
+					}
+				});
+				server.plugins['models'].buildings.get_buildings_byArea(area_id,function(err,rows){
+					if (!err) {
+						ep.emit("buildings", rows);
+					}else {
+						ep.emit("buildings", []);
+					}
+                });
+				server.plugins['models'].house_types.get_types(info2,function(err,rows){
+					if (!err) {
+						var type_map = {};
+						for (var i = 0; i < rows.length; i++) {
+							type_map[rows[i].id] = rows[i];
+						}
+						ep.emit("types", type_map);
+					}else {
+						ep.emit("types", {});
+					}
+				});
+			}
+		},
 
 
 
