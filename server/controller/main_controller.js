@@ -40,6 +40,26 @@ var do_result = function(err,result,cb){
 exports.register = function(server, options, next) {
 
     server.route([
+		//存login_info
+		{
+			method: "POST",
+			path: '/save_login',
+			handler: function(request, reply) {
+				var token_id = request.payload.token_id;
+				var user_id = request.payload.user_id;
+				if (!token_id || !user_id) {
+					return reply({"success":false,"message":"token_id or user_id null","service_info":service_info});
+				}
+
+				server.plugins['models'].login_infos.save_login(token_id, user_id,function(err,result){
+					if (result.affectedRows>0) {
+						return reply({"success":true,"service_info":service_info});
+					}else {
+						return reply({"success":false,"message":result.message,"service_info":service_info});
+					}
+				});
+			}
+		},
 		//token_id查询user_id
         {
             method: "GET",
@@ -75,11 +95,7 @@ exports.register = function(server, options, next) {
 						if (rows.length==0) {
 							 return reply({"success":false,"message":"没有这个筹号","service_info":service_info});
 						}else {
-							var phone = [];
-							for (var i = 0; i < rows.length; i++) {
-								phone.push(rows[i].phone);
-							}
-							return reply({"success":true,"rows":phone,"service_info":service_info});
+							return reply({"success":true,"rows":rows,"service_info":service_info});
 						}
 					}else {
 	                    return reply({"success":false,"message":rows.message,"service_info":service_info});
@@ -299,8 +315,6 @@ exports.register = function(server, options, next) {
                         return reply({"success":false,"message":result.message,"service_info":service_info});
                     }
                 });
-
-
             }
         },
         //获取个人订购信息
