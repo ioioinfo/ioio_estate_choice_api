@@ -5,7 +5,8 @@ var estate_areas = function(server) {
 	return {
 		//找房产项目信息
 		get_estate_by_id : function(id,cb){
-			var query = `select id, name, province, city, district, created_at, updated_at
+			var query = `select id, name, province, city, district, DATE_FORMAT(starting_date,'%Y-%m-%d') starting_date,
+			DATE_FORMAT(end_date,'%Y-%m-%d') end_date, created_at, updated_at
 			from estate_areas where flag = 0 and id = ?
 			`;
 
