@@ -6,7 +6,7 @@ var buildings = function(server) {
 		//获得所有
 		get_buildings : function(info,cb){
 			var query = `select id, name, area_id, created_at, updated_at
-			from buildings where flag = 0 and area_id = ?
+			from buildings where flag = 0
 			`;
 			if (info.thisPage) {
                 var offset = info.thisPage-1;

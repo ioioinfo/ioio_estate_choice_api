@@ -43,6 +43,76 @@ exports.register = function(server, options, next) {
 		//所有订购
         {
             method: "GET",
+            path: '/get_infos',
+            handler: function(request, reply) {
+				var info2 = {};
+
+				var ep =  eventproxy.create("rows", "buildings", "types", "purchases",
+					function(rows, buildings, types, purchases){
+						for (var i = 0; i < rows.length; i++) {
+							var row = rows[i];
+							if (buildings[row.building_id]) {
+								row.building_name = buildings[row.building_id].name;
+							}
+							if (purchases[row.id]) {
+								row.purchase_name = purchases[row.id].name;
+								row.purchase_phone = purchases[row.id].phone;
+								row.purchase_number = purchases[row.id].number;
+							}
+							if (types[row.house_type_id]) {
+								row.type_name = types[row.house_type_id].name;
+								row.type_picture = types[row.house_type_id].picture;
+							}
+						}
+					return reply({"success":true,"rows":rows,"service_info":service_info});
+				});
+
+				server.plugins['models'].house_infos.get_houses(info2,function(err,rows){
+					if (!err) {
+						ep.emit("rows", rows);
+					}else {
+						ep.emit("rows", []);
+					}
+				});
+				server.plugins['models'].buildings.get_buildings(info2,function(err,rows){
+					if (!err) {
+						var buildings_map = {};
+						for (var i = 0; i < rows.length; i++) {
+							buildings_map[rows[i].id] = rows[i];
+						}
+						ep.emit("buildings", buildings_map);
+					}else {
+						ep.emit("buildings", {});
+					}
+                });
+				server.plugins['models'].house_types.get_types(info2,function(err,rows){
+					if (!err) {
+						var type_map = {};
+						for (var i = 0; i < rows.length; i++) {
+							type_map[rows[i].id] = rows[i];
+						}
+						ep.emit("types", type_map);
+					}else {
+						ep.emit("types", {});
+					}
+				});
+				server.plugins['models'].purchases.get_purchases(function(err,rows){
+					if (!err) {
+						var purchases_map = {};
+						for (var i = 0; i < rows.length; i++) {
+							purchases_map[rows[i].house_id] = rows[i];
+						}
+						ep.emit("purchases", purchases_map);
+					}else {
+						ep.emit("purchases", {});
+					}
+				});
+
+            }
+        },
+		//所有订购
+        {
+            method: "GET",
             path: '/get_purchases',
             handler: function(request, reply) {
                 //查询
@@ -616,6 +686,8 @@ exports.register = function(server, options, next) {
 				});
 			}
 		},
+
+
 
 
 
