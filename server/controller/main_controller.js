@@ -192,26 +192,45 @@ exports.register = function(server, options, next) {
 						if (num>=5) {
 							return reply({"success":false,"message":"最多收藏5个房源","service_info":service_info});
 						}else {
-							//查询
-			                server.plugins['models'].collections.get_account_byUser(user_id,function(err,rows){
-			                    if (!err) {
-									var code = 0;
-									if (rows.length == 0) {
-										code = 1;
+							server.plugins['models'].collections.search_collection_exist(user_id, house_id, function(err,rows){
+								if (!err) {
+									if (rows.length ==0) {
+										//查询
+						                server.plugins['models'].collections.get_account_byUser(user_id,function(err,rows){
+						                    if (!err) {
+												var code = 0;
+												if (rows.length == 0) {
+													code = 1;
+												}else {
+													var code = rows[0].code + 1;
+												}
+						                        server.plugins['models'].collections.save_collection(house_id, user_id, code,function(err,result){
+													console.log("新增收藏");
+						                            if (result.affectedRows>0) {
+						        						return reply({"success":true,"service_info":service_info});
+						        					}else {
+						        						return reply({"success":false,"message":result.message,"service_info":service_info});
+						        					}
+						                        });
+						                    }else {
+						                        return reply({"success":false,"message":rows.message,"service_info":service_info});
+						                    }
+						                });
 									}else {
-										var code = rows[0].code + 1;
+										server.plugins['models'].collections.update_collection(user_id, house_id,function(err,result){
+											console.log("更新收藏");
+
+											if (result.affectedRows>0) {
+												return reply({"success":true,"service_info":service_info});
+											}else {
+												return reply({"success":false,"message":result.message,"service_info":service_info});
+											}
+										});
 									}
-			                        server.plugins['models'].collections.save_collection(house_id, user_id, code,function(err,result){
-			                            if (result.affectedRows>0) {
-			        						return reply({"success":true,"service_info":service_info});
-			        					}else {
-			        						return reply({"success":false,"message":result.message,"service_info":service_info});
-			        					}
-			                        });
-			                    }else {
-			                        return reply({"success":false,"message":rows.message,"service_info":service_info});
-			                    }
-			                });
+								}else {
+									 return reply({"success":false,"message":rows.message,"service_info":service_info});
+								}
+							});
 						}
 					}else {
 						return reply({"success":false,"message":rows.message,"service_info":service_info});
@@ -323,14 +342,25 @@ exports.register = function(server, options, next) {
                 if (!house_id || !user_id) {
                     return reply({"success":false,"message":"house_id or user_id null","service_info":service_info});
                 }
+				server.plugins['models'].house_infos.search_house_byId(house_id,
+					function(err,rows){
+					if (!err) {
+						if (rows[0].is_push == "未推") {
+							return reply({"success":false,"message":"此房源还未推出","service_info":service_info});
+						}else {
+							server.plugins['models'].purchases.save_purchase(house_id, user_id,function(err,result){
+			                    if (result.affectedRows>0) {
+			                        return reply({"success":true,"service_info":service_info});
+			                    }else {
+			                        return reply({"success":false,"message":result.message,"service_info":service_info});
+			                    }
+			                });
+						}
+					}else {
+						return reply({"success":false,"message":rows.message,"service_info":service_info});
+					}
+				});
 
-                server.plugins['models'].purchases.save_purchase(house_id, user_id,function(err,result){
-                    if (result.affectedRows>0) {
-                        return reply({"success":true,"service_info":service_info});
-                    }else {
-                        return reply({"success":false,"message":result.message,"service_info":service_info});
-                    }
-                });
             }
         },
         //获取个人订购信息

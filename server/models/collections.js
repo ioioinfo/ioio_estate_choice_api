@@ -108,7 +108,36 @@ var collections = function(server) {
 				cb(false,results);
 			});
 		},
+		//查询是否存在
+		search_collection_exist : function(user_id, house_id, cb){
+			var query = `select id, flag
+			from collections where  user_id = ? and house_id = ?
+			`;
 
+			server.plugins['mysql'].query(query,[user_id,house_id], function(err, results) {
+				if (err) {
+					console.log(err);
+					cb(true,results);
+					return;
+				}
+				cb(false,results);
+			});
+		},
+		//更新信息
+		update_collection:function(user_id, house_id, cb){
+			var query = `update collections set flag =0, updated_at = now()
+				where user_id = ? and house_id = ?
+				`;
+			var coloums = [user_id, house_id];
+			server.plugins['mysql'].query(query, coloums, function(err, results) {
+				if (err) {
+					console.log(err);
+					cb(true,results);
+					return;
+				}
+				cb(false,results);
+			});
+		},
 
 	};
 };
