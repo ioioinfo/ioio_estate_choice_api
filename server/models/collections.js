@@ -33,6 +33,21 @@ var collections = function(server) {
 				cb(false,results);
 			});
 		},
+		//同个房源收藏次数
+		get_num_by_house : function(house_id,cb){
+			var query = `select count(1)num
+			from collections where flag = 0 and house_id = ?
+			`;
+
+			server.plugins['mysql'].query(query,[house_id], function(err, results) {
+				if (err) {
+					console.log(err);
+					cb(true,results);
+					return;
+				}
+				cb(false,results);
+			});
+		},
 		// 保存
 		save_collection : function(house_id, user_id, code, cb){
 			var query = `insert into collections (house_id, user_id, code, created_at, updated_at, flag )

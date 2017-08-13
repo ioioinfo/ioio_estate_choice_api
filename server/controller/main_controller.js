@@ -40,6 +40,26 @@ var do_result = function(err,result,cb){
 exports.register = function(server, options, next) {
 
     server.route([
+		//同个房源收藏次数
+        {
+            method: "GET",
+            path: '/get_num_by_house',
+            handler: function(request, reply) {
+				var house_id = request.query.house_id;
+				if (!house_id) {
+					return reply({"success":false,"message":"house_id null","service_info":service_info});
+				}
+                //查询
+                server.plugins['models'].collections.get_num_by_house(house_id,function(err,rows){
+                    if (!err) {
+						return reply({"success":true,"rows":rows,"service_info":service_info});
+					}else {
+	                    return reply({"success":false,"message":rows.message,"service_info":service_info});
+					}
+				});
+
+            }
+        },
 		//所有订购
         {
             method: "GET",
