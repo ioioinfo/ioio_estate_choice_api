@@ -166,6 +166,26 @@ exports.register = function(server, options, next) {
 
             }
         },
+		//user_id获取user
+        {
+            method: "GET",
+            path: '/get_user',
+            handler: function(request, reply) {
+                var user_id = request.query.user_id;
+                if (!user_id) {
+                    return reply({"success":false,"message":"user_id null","service_info":service_info});
+                }
+                //查询
+                server.plugins['models'].user_infos.search_user_byId(user_id,function(err,rows){
+                    if (!err) {
+						return reply({"success":true,"rows":rows,"service_info":service_info});
+					}else {
+	                    return reply({"success":false,"message":rows.message,"service_info":service_info});
+					}
+				});
+
+            }
+        },
         //筹号获取用户信息
         {
             method: "GET",
