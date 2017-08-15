@@ -153,6 +153,21 @@ var collections = function(server) {
 				cb(false,results);
 			});
 		},
+		//查询所有的数量
+		search_collection_nums: function(cb){
+			var query = `select house_id, count(house_id)num from collections  where flag =0 group by house_id
+			`;
+
+			server.plugins['mysql'].query(query, function(err, results) {
+				if (err) {
+					console.log(err);
+					cb(true,results);
+					return;
+				}
+				cb(false,results);
+			});
+		},
+
 
 	};
 };

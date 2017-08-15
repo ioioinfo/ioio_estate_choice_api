@@ -726,7 +726,24 @@ exports.register = function(server, options, next) {
 				});
 			}
 		},
-
+		//查询所有的数量
+		{
+			method: "GET",
+			path: '/search_collection_nums',
+			handler: function(request, reply) {
+				server.plugins['models'].collections.search_collection_nums(function(err,rows){
+					if (!err) {
+						var collect_map = {};
+						for (var i = 0; i < rows.length; i++) {
+							collect_map[rows[i].house_id]=rows[i].num;
+						}
+						return reply({"success":true,"collect_map":collect_map,"service_info":service_info});
+					}else {
+						return reply({"success":false,"message":result.message,"service_info":service_info});
+					}
+				});
+			}
+		},
 
 
 
